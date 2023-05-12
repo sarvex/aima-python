@@ -573,11 +573,9 @@ class SolveMDP(tk.Frame):
     def process_data(self, terminals, _height, _width, gridmdp):
         """preprocess variables"""
 
-        flipped_terminals = []
-
-        for terminal in terminals:
-            flipped_terminals.append((terminal[1], _height - terminal[0] - 1))
-
+        flipped_terminals = [
+            (terminal[1], _height - terminal[0] - 1) for terminal in terminals
+        ]
         grid_to_solve = [[0.0] * max(1, _width) for _ in range(max(1, _height))]
         grid_to_show = [[0.0] * max(1, _width) for _ in range(max(1, _height))]
 
@@ -627,8 +625,13 @@ class SolveMDP(tk.Frame):
         U = self.U1.copy()
 
         for s in self.sequential_decision_environment.states:
-            self.U1[s] = self.R(s) + self.gamma * max(
-                [sum([p * U[s1] for (p, s1) in self.T(s, a)]) for a in self.sequential_decision_environment.actions(s)])
+            self.U1[s] = self.R(s) + (
+                self.gamma
+                * max(
+                    sum(p * U[s1] for (p, s1) in self.T(s, a))
+                    for a in self.sequential_decision_environment.actions(s)
+                )
+            )
             self.delta = max(self.delta, abs(self.U1[s] - U[s]))
 
         self.grid_to_show = grid_to_show = [[0.0] * max(1, self._width) for _ in range(max(1, self._height))]
@@ -664,7 +667,9 @@ class SolveMDP(tk.Frame):
             U = U1.copy()
 
             for s in mdp.states:
-                U1[s] = R(s) + gamma * max([sum([p * U[s1] for (p, s1) in T(s, a)]) for a in mdp.actions(s)])
+                U1[s] = R(s) + gamma * max(
+                    sum(p * U[s1] for (p, s1) in T(s, a)) for a in mdp.actions(s)
+                )
 
             U_over_time.append(U)
         return U_over_time
